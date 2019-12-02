@@ -1,0 +1,37 @@
+# Provision k8s-master node
+---
+- hosts: all
+  become: yes
+  become_user: root
+  gather_facts: yes
+  vars:
+    K8S_API_SERVER_ADDRESS: "192.168.50.10"
+    K8S_POD_NETWORK_CIDR: 192.168.0.0/16
+    K8S_NODE_NAME: master
+
+  tasks:
+    - import_tasks: core-tools.yml
+    - import_tasks: kube-common.yml
+
+    - name: Initialize kube-master using kubeadm
+      command: kubeadm init --apiserver-advertise-address={{ K8S_API_SERVER_ADDRESS }} --apiserver-cert-extra-sans="{{ K8S_API_SERVER_ADDRESS }}" --node-name {{ K8S_NODE_NAME }} --pod-network-cidr={{ K8S_POD_NETWORK_CIDR }}
+    
+    - name: Setup kubeconfig for vagrant user
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest:  /home/vagrant/.kube/config
+        remote_src: yes
+        owner: "vagrant"
+        group: "vagrant"
+        mode: 0660
+        
+    - name: Install calico pod network
+      become: false
+      command: kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml
+    
+    - name: Generate join command
+      command: kubeadm token create --print-join-command
+      register: join_command
+
+    - name: Copy join command to local file
+      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"

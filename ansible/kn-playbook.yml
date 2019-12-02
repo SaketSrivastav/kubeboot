@@ -1,0 +1,19 @@
+# Provision k8s-worker nodes
+---
+- hosts: all
+  become: yes
+  become_user: root
+  gather_facts: yes # required to get the swap total bytes from remote
+
+  tasks:
+    - import_tasks: core-tools.yml
+    - import_tasks: kube-common.yml
+    
+    - name: Copy the join command to server location
+      copy:
+        src: ./join-command
+        dest: /tmp/join-command.sh
+        mode: 0760
+
+    - name: Join the node to cluster
+      command: sh /tmp/join-command.sh
