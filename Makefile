@@ -15,5 +15,5 @@ cluster-up:
 master-up:
 	vagrant up $(MASTER_NODE)
 
-start-cluster:
+boot-cluster:
 	clean-cluster master-up cluster-up check-nodes-ready
