@@ -16,6 +16,12 @@
     - name: Initialize kube-master using kubeadm
       command: kubeadm init --apiserver-advertise-address={{ K8S_API_SERVER_ADDRESS }} --apiserver-cert-extra-sans="{{ K8S_API_SERVER_ADDRESS }}" --node-name {{ K8S_NODE_NAME }} --pod-network-cidr={{ K8S_POD_NETWORK_CIDR }}
     
+    - name: Create sure .kube folder for vagrant user
+      file:
+        path: "/home/vagrant/.kube"
+        state: directory
+        recurse: yes
+
     - name: Setup kubeconfig for vagrant user
       copy:
         src: /etc/kubernetes/admin.conf
@@ -33,5 +39,8 @@
       command: kubeadm token create --print-join-command
       register: join_command
 
+    - debug: var=join_command.stdout_lines
+
     - name: Copy join command to local file
-      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+      become: false
+      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="join-command"

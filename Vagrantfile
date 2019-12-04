@@ -16,14 +16,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     lv.memory = 2048
     lv.cpus = 2
   end
-  config.vm.define "km" do |km|
+  config.vm.define "km", autostart: false do |km|
     km.vm.box = IMAGE_NAME
     km.vm.network "private_network", ip: "192.168.50.10"
     km.vm.hostname = "km"
     km.vm.box_check_update = false
     km.vm.provision "ansible" do |ansible|
       ansible.compatibility_mode = '2.0'
-      ansible.verbose = "vvv"
+      #ansible.verbose = "v"
       ansible.playbook = "ansible/km-playbook.yml"
       ansible.extra_vars = { 
         ansible_python_interpreter:"/usr/bin/python3",
@@ -39,7 +39,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       kn.vm.network "private_network", ip: "192.168.50.#{i + 10}"
       kn.vm.provision "ansible" do |ansible|
         ansible.compatibility_mode = '2.0'
-        ansible.verbose = "vvv"
+        #ansible.verbose = "v"
         ansible.playbook = "ansible/kn-playbook.yml"
         ansible.extra_vars = { 
         ansible_python_interpreter:"/usr/bin/python3",
